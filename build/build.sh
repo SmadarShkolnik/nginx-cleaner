@@ -44,8 +44,16 @@ build_openssl() {
         "Rebuild from upstream OpenSSL ${OPENSSL_VERSION} tarball (version bump from 3.0.11)."
     apt-get build-dep -y --no-install-recommends ./
 
+    # OpenSSL's test suite is skipped by default (nocheck) to keep builds fast.
+    # Set OPENSSL_CHECK=1 to run it (see Makefile / Dockerfile build arg).
+    local build_opts="parallel=$NPROC"
+    if [ "${OPENSSL_CHECK:-0}" = "1" ]; then
+        echo "OPENSSL_CHECK=1: running OpenSSL test suite (DEB_BUILD_OPTIONS without nocheck)."
+    else
+        build_opts="nocheck $build_opts"
+    fi
     # -B: arch-dependent packages only (skips libssl-doc); noudeb: skip installer udebs.
-    DEB_BUILD_OPTIONS="nocheck parallel=$NPROC" DEB_BUILD_PROFILES="noudeb" \
+    DEB_BUILD_OPTIONS="$build_opts" DEB_BUILD_PROFILES="noudeb" \
         dpkg-buildpackage -B -us -uc
 
     cd "$dir"
@@ -119,6 +127,14 @@ build_nginx() {
     find . -maxdepth 1 -name 'nginx*.deb' ! -name '*-dbg_*' -exec cp {} "$OUT/" \;
 }
 
-build_openssl
-build_nginx
+# Each stage can be built on its own so the Dockerfile can cache them separately.
+#   build.sh openssl   -> OpenSSL debs only
+#   build.sh nginx     -> nginx + modules (needs OpenSSL already built/installed)
+#   build.sh [all]     -> both (default)
+case "${1:-all}" in
+    openssl) build_openssl ;;
+    nginx)   build_nginx ;;
+    all)     build_openssl; build_nginx ;;
+    *)       echo "usage: build.sh [openssl|nginx|all]" >&2; exit 2 ;;
+esac
 ls -l "$OUT"

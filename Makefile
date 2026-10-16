@@ -16,10 +16,15 @@ export DOCKER_BUILDKIT=1
 
 all: deb image test
 
+DOCKER_BUILD_FLAGS ?=
+# OPENSSL_CHECK=1 runs OpenSSL's upstream test suite during `make deb` (slower).
+# Default 0 keeps builds fast (DEB_BUILD_OPTIONS=nocheck).
+OPENSSL_CHECK ?= 0
+
 deb:
-	rm -rf $(DEBS)
-	docker build -f build/Dockerfile.build --output type=local,dest=$(DEBS) build/
-	ls -l $(DEBS)
+	rm -rf out/debs
+	docker build $(DOCKER_BUILD_FLAGS) --build-arg OPENSSL_CHECK=$(OPENSSL_CHECK) -f build/Dockerfile --output type=local,dest=out/debs build/
+	ls -l out/debs
 
 image:
 	docker pull $(ORIG_IMAGE)

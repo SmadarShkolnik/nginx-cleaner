@@ -29,6 +29,10 @@ RUN --mount=type=bind,source=out/debs,target=/tmp/debs \
         gettext-base \
         curl \
     && rm -rf /var/lib/apt/lists/* \
+# Hold our from-source packages. Their +echo1 versions sort BELOW a future Debian
+# 3.0.22-1~deb12u2, so an apt upgrade (here or in a derived image) could replace or
+# reject them. To take a real update, rebuild from source (build/) and bump +echoN.
+    && apt-mark hold nginx libssl3 openssl \
 # forward request and error logs to docker log collector
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \

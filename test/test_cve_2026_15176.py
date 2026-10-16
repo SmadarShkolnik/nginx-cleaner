@@ -44,9 +44,17 @@ def test_patched_image_rejects_mapping(cve_pair):
     assert ok.status == 200 and b"Welcome to nginx!" in ok.body
 
 
-def test_original_image_behaviour_recorded(cve_pair):
-    """Not asserted: shows what the unpatched build returns for the same request."""
+def test_original_image_detects_vulnerability(cve_pair):
+    """Proves the test can SEE the bug: the unpatched build leaks a body for /foo/1."""
     results, logs = probe(cve_pair.orig)
     print(f"\noriginal image /foo/1 -> {results[0].status} body={results[0].body!r} "
           f"(len {len(results[0].body)}); alert_logged={ALERT in logs} "
           f"worker_crash={'exited on signal' in logs}")
+    # /foo/1 is PATHS[0], repeated 10 times -> results[0:10].
+    foo1 = results[: 10]
+    # Every /foo/1 answers 200 with a NON-EMPTY body: the broken alias mapping
+    # ran and $request_filename returned leaked heap bytes. The patched image
+    # returns b"" for the same request (see test above), so empty vs non-empty
+    # is exactly what separates vulnerable from fixed.
+    assert all(r.status == 200 for r in foo1)
+    assert all(len(r.body) > 0 for r in foo1), [r.body for r in foo1]
