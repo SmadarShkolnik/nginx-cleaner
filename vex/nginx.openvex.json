@@ -1,0 +1,37 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/echo/nginx-cleaner-data/vex/nginx-1.25.5-echo1",
+  "author": "nginx-cleaner-data build",
+  "role": "Image maintainer",
+  "timestamp": "2026-10-16T12:00:00Z",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": { "name": "CVE-2026-15176" },
+      "products": [
+        {
+          "@id": "echo/nginx:1.25-bookworm",
+          "subcomponents": [
+            { "@id": "pkg:deb/debian/nginx@1.25.5-1%2Becho1~bookworm" }
+          ]
+        }
+      ],
+      "status": "fixed",
+      "status_notes": "Backported upstream nginx commit ce1da78 (\"Avoid post-rewrite URI to path mapping with alias\", fixed upstream in 1.30.6/1.31.7) onto 1.25.5: build/patches/nginx/CVE-2026-15176.patch. Verified by test/test_cve_2026_15176.py."
+    },
+    {
+      "vulnerability": { "name": "CVE-2026-93479" },
+      "products": [
+        {
+          "@id": "echo/nginx:1.25-bookworm",
+          "subcomponents": [
+            { "@id": "pkg:deb/debian/nginx@1.25.5-1%2Becho1~bookworm" }
+          ]
+        }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "nginx.org lists the affected versions as 1.30.0-1.30.5 and 1.31.2-1.31.6; the code introduced in those releases is not present in 1.25.5."
+    }
+  ]
+}

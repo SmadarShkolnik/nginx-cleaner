@@ -1,0 +1,17 @@
+# Builds the .debs from source on a clean debian:bookworm-slim.
+#   docker build -f build/Dockerfile.build --output type=local,dest=out/debs build/
+FROM debian:bookworm-slim AS builder
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential ca-certificates curl debhelper devscripts dpkg-dev \
+        fakeroot file git libxml2-utils lsb-release quilt xsltproc xz-utils \
+    && echo 'DEBUILD_LINTIAN=no' > /root/.devscripts
+
+COPY build.sh versions.env /src/
+COPY patches /src/patches
+# Full log stays in the build stage; print its tail if the build fails.
+RUN /src/build.sh > /build.log 2>&1 || { tail -n 150 /build.log; exit 1; }
+
+FROM scratch AS export
+COPY --from=builder /out/ /

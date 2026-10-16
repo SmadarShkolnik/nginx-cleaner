@@ -1,0 +1,9 @@
+# Rendered by /docker-entrypoint.d/20-envsubst-on-templates.sh into conf.d/default.conf
+server {
+    listen       80;
+    server_name  localhost;
+
+    location / {
+        return 200 "greeting=${NGINX_GREETING} port=${NGINX_PORT_LABEL}\n";
+    }
+}
