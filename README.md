@@ -120,6 +120,8 @@ function level.
 | Build and delivery gaps: arm64 only, OpenSSL self-tests skipped, build tools not pinned, VEX not attached to the image | Out of scope for the assignment                               | Build on amd64, run OpenSSL's tests, pin build deps, ship the VEX as an OCI attestation |
 
 
+
+
 ## What I'd do next
 
 This repo is a one-off, manual fix for one image. To make it work at scale:
@@ -134,13 +136,32 @@ passes on the new one before a fix is accepted.
 person steps in only on failure.
 
 
-
 ## How I used AI (Claude Code)
-
-**What I decided.** The triage filters (reachability by linked library, then severity and EPSS) and which CVEs to fix; what "drop-in" means for the test (byte-identical response and the same image/runtime); and that the CVE test must prove the *original* image is vulnerable, not just the patched one safe.
 
 **What Claude Code built.** The build scripts, the Debian/pkg-oss packaging, the test harness,  the scan-diff script. Also made another agent with different context to be its reviewer.
 
 **Where it hurt.** The mistakes surfaced only when things actually ran:, should have make it run several times, to make sure nothing it over assummed or over-engineered - It tended to add extras beyond the assignment that I later removed (identical builder to extra tests over the layers, double testing by many shapes - that was over to maintain.
 
-**What I don't yet understand in depth and would learn next.** Debian packaging internals (end to end), the memory-level details of the C fix, and function-level (not just library-level) reachability.
+## What I learned
+
+**Choosing CVEs:** severity alone isn't enough. I filtered by reachability
+(only libraries nginx links to, via `ldd`) and, for bumps, by EPSS, the
+probability a CVE is exploited in the wild in the next 30 days.
+
+**Build caching:** each Docker `RUN`/`COPY` is a cached layer, so I ordered
+the build from what changes least to what changes most (toolchain →
+OpenSSL → nginx patches). Editing a patch doesn't rebuild OpenSSL.
+
+**Minimal diff from upstream:** the Containerfile, entrypoint scripts and
+nginx packaging are copied from the exact upstream commits; my changes are
+a few lines (the patch, the version suffix, the OpenSSL version). The
+smaller the diff, the easier it is to prove the image is a drop-in.
+
+**What proves what:** the compatibility test proves nothing broke, the CVE
+test proves the fix works, and the rescan + VEX shows it to scanners, which
+can't see a backport on their own.
+
+### What I don't yet understand in depth and would learn next:
+* Debian packaging internals (end to end)
+* The memory-level details of the C fix
+* Function-level (not just library-level) reachability
