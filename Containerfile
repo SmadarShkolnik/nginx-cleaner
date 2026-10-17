@@ -1,10 +1,10 @@
 # Drop-in replacement for nginx:1.25-bookworm, installed from our own .debs (out/debs, see build/).
 # Mirrors docker-nginx mainline/debian/Dockerfile at commit 9abe4ae (nginx 1.25.5, njs 0.8.4-3):
 # same base, user/group, packages, env, entrypoint scripts, ports, stop signal and command.
-#   docker build -f Containerfile -t echo/nginx:1.25-bookworm .
-# Base pinned by digest (DEBIAN_BASE_DIGEST in build/versions.env) for reproducibility;
-# keep this digest in sync with versions.env and build/Dockerfile.
-FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
+#   docker build --build-arg BASE_IMAGE=... -f Containerfile -t echo/nginx:1.25-bookworm .
+# BASE_IMAGE is the digest-pinned debian:bookworm-slim, set in the Makefile (`make image`).
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 

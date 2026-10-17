@@ -63,13 +63,6 @@ def sev_cells(keys, sev_of):
     return " | ".join(str(n) for n in counts)
 
 
-# Row/title labels. Overridable so the same diff can describe "baseline vs rebuilt"
-# or, e.g., "apt-upgraded vs rebuilt" without changing the default `make scan` output.
-BASE_LABEL = os.environ.get("SCAN_DIFF_BASE_LABEL", "baseline")
-TITLE = os.environ.get("SCAN_DIFF_TITLE",
-                       "Scan diff: nginx:1.25-bookworm vs rebuilt image")
-
-
 def summarize(name, before, after):
     kb, ka = keymap(before), keymap(after)
     bset, aset = set(kb), set(ka)
@@ -79,7 +72,7 @@ def summarize(name, before, after):
             + " | ".join(SEV_ORDER) + " | other |")
     rule = "|---|---:|---:|" + "---:|" * (len(SEV_ORDER) + 1)
     rows = [
-        (BASE_LABEL, bset, kb), ("rebuilt", aset, ka),
+        (f"baseline", bset, kb), ("rebuilt", aset, ka),
         ("removed", removed, kb), ("added", added, ka),
     ]
     out = [f"### {name}", "", head, rule]
@@ -130,7 +123,7 @@ def main():
     total_added = sum(len(set(keymap(a)) - set(keymap(b))) for b, a in parsed.values())
     added_note = "**0 added (no regressions)**" if total_added == 0 else f"**{total_added} ADDED**"
 
-    out = [f"# {TITLE}", "",
+    out = ["# Scan diff: nginx:1.25-bookworm vs rebuilt image", "",
            f"**Result:** {'; '.join(bits)}. {added_note}.",
            "",
            "_A finding is one package x CVE pair; the same CVE in several packages "
@@ -145,18 +138,17 @@ def main():
     # --- target CVEs ---
     if cves:
         vex_rows = parse_grype(vex_path) if os.path.exists(vex_path) else None
-        tb, gb = f"Trivy {BASE_LABEL}", f"Grype {BASE_LABEL}"
         present = {
-            tb: {i for _, i, _ in parsed["Trivy"][0]},
+            "Trivy baseline": {i for _, i, _ in parsed["Trivy"][0]},
             "Trivy rebuilt": {i for _, i, _ in parsed["Trivy"][1]},
-            gb: {i for _, i, _ in parsed["Grype"][0]},
+            "Grype baseline": {i for _, i, _ in parsed["Grype"][0]},
             "Grype rebuilt": {i for _, i, _ in parsed["Grype"][1]},
         }
         pkg_of = {
-            tb: parsed["Trivy"][0], "Trivy rebuilt": parsed["Trivy"][1],
-            gb: parsed["Grype"][0], "Grype rebuilt": parsed["Grype"][1],
+            "Trivy baseline": parsed["Trivy"][0], "Trivy rebuilt": parsed["Trivy"][1],
+            "Grype baseline": parsed["Grype"][0], "Grype rebuilt": parsed["Grype"][1],
         }
-        columns = [tb, "Trivy rebuilt", gb, "Grype rebuilt"]
+        columns = ["Trivy baseline", "Trivy rebuilt", "Grype baseline", "Grype rebuilt"]
         if vex_rows is not None:
             columns.append("Grype rebuilt + VEX")
             present["Grype rebuilt + VEX"] = {i for _, i, _ in vex_rows}
