@@ -1,0 +1,76 @@
+2026/10/17 13:01:15 [notice] 6349#0: using the "epoll" event method
+2026/10/17 13:01:15 [notice] 6349#0: nginx/1.25.5
+2026/10/17 13:01:15 [notice] 6349#0: built by gcc 12.2.0 (Debian 12.2.0-14+deb12u1) 
+2026/10/17 13:01:15 [notice] 6349#0: OS: Linux 6.10.14-linuxkit
+2026/10/17 13:01:15 [notice] 6349#0: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+=================================================================
+==6349==ERROR: AddressSanitizer: negative-size-param: (size=-3)
+    #0 0xffffaa04905c in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827
+    #1 0xaaaade6689ac in ngx_http_map_uri_to_path src/http/ngx_http_core_module.c:1942
+    #2 0xaaaade6b1de0 in ngx_http_variable_request_filename src/http/ngx_http_variables.c:1693
+    #3 0xaaaade6abe8c in ngx_http_get_indexed_variable src/http/ngx_http_variables.c:637
+    #4 0xaaaade6be08c in ngx_http_script_copy_var_len_code src/http/ngx_http_script.c:944
+    #5 0xaaaade6b8c14 in ngx_http_complex_value src/http/ngx_http_script.c:83
+    #6 0xaaaade667774 in ngx_http_send_response src/http/ngx_http_core_module.c:1769
+    #7 0xaaaade6c2a18 in ngx_http_script_return_code src/http/ngx_http_script.c:1499
+    #8 0xaaaade76118c in ngx_http_rewrite_handler src/http/modules/ngx_http_rewrite_module.c:180
+    #9 0xaaaade662898 in ngx_http_core_rewrite_phase src/http/ngx_http_core_module.c:929
+    #10 0xaaaade66267c in ngx_http_core_run_phases src/http/ngx_http_core_module.c:875
+    #11 0xaaaade66251c in ngx_http_handler src/http/ngx_http_core_module.c:858
+    #12 0xaaaade687374 in ngx_http_process_request src/http/ngx_http_request.c:2140
+    #13 0xaaaade684104 in ngx_http_process_request_headers src/http/ngx_http_request.c:1529
+    #14 0xaaaade68259c in ngx_http_process_request_line src/http/ngx_http_request.c:1196
+    #15 0xaaaade680cec in ngx_http_wait_request_handler src/http/ngx_http_request.c:523
+    #16 0xaaaade65055c in ngx_epoll_process_events src/event/modules/ngx_epoll_module.c:901
+    #17 0xaaaade61e504 in ngx_process_events_and_timers src/event/ngx_event.c:248
+    #18 0xaaaade646138 in ngx_single_process_cycle src/os/unix/ngx_process_cycle.c:300
+    #19 0xaaaade588fe4 in main src/core/nginx.c:381
+    #20 0xffffa9d97740  (/lib/aarch64-linux-gnu/libc.so.6+0x27740)
+    #21 0xffffa9d97814 in __libc_start_main (/lib/aarch64-linux-gnu/libc.so.6+0x27814)
+    #22 0xaaaade58802c in _start (/asan/nginx-1.25.5/objs/nginx+0x5802c)
+
+0xffffa7616275 is located 3445 bytes inside of 4096-byte region [0xffffa7615500,0xffffa7616500)
+allocated by thread T0 here:
+    #0 0xffffaa0aadf4 in __interceptor_posix_memalign ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0xaaaade634828 in ngx_memalign src/os/unix/ngx_alloc.c:57
+    #2 0xaaaade5920d0 in ngx_create_pool src/core/ngx_palloc.c:23
+    #3 0xaaaade681274 in ngx_http_alloc_request src/http/ngx_http_request.c:573
+    #4 0xaaaade680d18 in ngx_http_create_request src/http/ngx_http_request.c:534
+    #5 0xaaaade680c68 in ngx_http_wait_request_handler src/http/ngx_http_request.c:516
+    #6 0xaaaade65055c in ngx_epoll_process_events src/event/modules/ngx_epoll_module.c:901
+    #7 0xaaaade61e504 in ngx_process_events_and_timers src/event/ngx_event.c:248
+    #8 0xaaaade646138 in ngx_single_process_cycle src/os/unix/ngx_process_cycle.c:300
+    #9 0xaaaade588fe4 in main src/core/nginx.c:381
+    #10 0xffffa9d97740  (/lib/aarch64-linux-gnu/libc.so.6+0x27740)
+    #11 0xffffa9d97814 in __libc_start_main (/lib/aarch64-linux-gnu/libc.so.6+0x27814)
+    #12 0xaaaade58802c in _start (/asan/nginx-1.25.5/objs/nginx+0x5802c)
+
+SUMMARY: AddressSanitizer: negative-size-param ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy
+AddressSanitizer: CHECK failed: asan_poisoning.cpp:183 "((beg)) < ((end))" (0xffffa7616275, 0xffffa7616272) (tid=6349)
+    #0 0xffffaa0b4534 in CheckUnwind ../../../../src/libsanitizer/asan/asan_rtl.cpp:67
+    #1 0xffffaa0d3790 in __sanitizer::CheckFailed(char const*, int, char const*, unsigned long long, unsigned long long) ../../../../src/libsanitizer/sanitizer_common/sanitizer_termination.cpp:86
+    #2 0xffffaa0aeb44 in __asan_region_is_poisoned ../../../../src/libsanitizer/asan/asan_poisoning.cpp:183
+    #3 0xffffaa048ff0 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827
+    #4 0xaaaade6689ac in ngx_http_map_uri_to_path src/http/ngx_http_core_module.c:1942
+    #5 0xaaaade6b1de0 in ngx_http_variable_request_filename src/http/ngx_http_variables.c:1693
+    #6 0xaaaade6abe8c in ngx_http_get_indexed_variable src/http/ngx_http_variables.c:637
+    #7 0xaaaade6be08c in ngx_http_script_copy_var_len_code src/http/ngx_http_script.c:944
+    #8 0xaaaade6b8c14 in ngx_http_complex_value src/http/ngx_http_script.c:83
+    #9 0xaaaade667774 in ngx_http_send_response src/http/ngx_http_core_module.c:1769
+    #10 0xaaaade6c2a18 in ngx_http_script_return_code src/http/ngx_http_script.c:1499
+    #11 0xaaaade76118c in ngx_http_rewrite_handler src/http/modules/ngx_http_rewrite_module.c:180
+    #12 0xaaaade662898 in ngx_http_core_rewrite_phase src/http/ngx_http_core_module.c:929
+    #13 0xaaaade66267c in ngx_http_core_run_phases src/http/ngx_http_core_module.c:875
+    #14 0xaaaade66251c in ngx_http_handler src/http/ngx_http_core_module.c:858
+    #15 0xaaaade687374 in ngx_http_process_request src/http/ngx_http_request.c:2140
+    #16 0xaaaade684104 in ngx_http_process_request_headers src/http/ngx_http_request.c:1529
+    #17 0xaaaade68259c in ngx_http_process_request_line src/http/ngx_http_request.c:1196
+    #18 0xaaaade680cec in ngx_http_wait_request_handler src/http/ngx_http_request.c:523
+    #19 0xaaaade65055c in ngx_epoll_process_events src/event/modules/ngx_epoll_module.c:901
+    #20 0xaaaade61e504 in ngx_process_events_and_timers src/event/ngx_event.c:248
+    #21 0xaaaade646138 in ngx_single_process_cycle src/os/unix/ngx_process_cycle.c:300
+    #22 0xaaaade588fe4 in main src/core/nginx.c:381
+    #23 0xffffa9d97740  (/lib/aarch64-linux-gnu/libc.so.6+0x27740)
+    #24 0xffffa9d97814 in __libc_start_main (/lib/aarch64-linux-gnu/libc.so.6+0x27814)
+    #25 0xaaaade58802c in _start (/asan/nginx-1.25.5/objs/nginx+0x5802c)
+

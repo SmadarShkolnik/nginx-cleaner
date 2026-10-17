@@ -1,0 +1,38 @@
+ssl_sni.t .. 
+1..10
+ok 1 - default cert
+ok 2 - sni cert
+ok 3 - host exists, sni exists, and host is equal sni
+ok 4 - host exists, sni not found
+not ok 5 - host exists, sni exists, and host is not equal sni # TODO sni restrictions
+#   Failed (TODO) test 'host exists, sni exists, and host is not equal sni'
+#   at ssl_sni.t line 108.
+#                   'HTTP/1.1 200 OK
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:56:45 GMT
+# Content-Type: text/plain
+# Content-Length: 21
+# Connection: close
+# 
+# example.com:localhost'
+#     doesn't match '(?^:400 Bad Request)'
+not ok 6 - host not found, sni exists # TODO sni restrictions
+#   Failed (TODO) test 'host not found, sni exists'
+#   at ssl_sni.t line 111.
+#                   'HTTP/1.1 200 OK
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:56:45 GMT
+# Content-Type: text/plain
+# Content-Length: 21
+# Connection: close
+# 
+# localhost:example.com'
+#     doesn't match '(?^:400 Bad Request)'
+ok 7 - ssl server name
+ok 8 - ssl server name - reused
+ok 9 - no alerts
+ok 10 - no sanitizer errors
+ok
+All tests successful.
+Files=1, Tests=10,  1 wallclock secs ( 0.01 usr  0.00 sys +  0.64 cusr  0.02 csys =  0.67 CPU)
+Result: PASS

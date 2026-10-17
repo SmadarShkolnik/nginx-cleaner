@@ -1,0 +1,57 @@
+
+#   Failed test 'error 405 directory redirect'
+#   at rewrite.t line 225.
+#                   'HTTP/1.1 403 Forbidden
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:57:05 GMT
+# Content-Type: text/html
+# Content-Length: 153
+# Connection: close
+# 
+# <html>
+# <head><title>403 Forbidden</title></head>
+# <body>
+# <center><h1>403 Forbidden</h1></center>
+# <hr><center>nginx/1.25.5</center>
+# </body>
+# </html>
+# '
+#     doesn't match '(?^ms:HTTP/1.1 301.*Location: http://)'
+# Looks like you failed 1 test of 25.
+rewrite.t .. 
+1..25
+ok 1 - simple
+ok 2 - simple with args
+ok 3 - add args
+ok 4 - add args with args
+ok 5 - no args with args
+ok 6 - return 204
+ok 7 - return 200
+ok 8 - return 306
+ok 9 - return 405
+ok 10 - error 404 return 405
+ok 11 - error 405 return 204
+ok 12 - error 405 return 200
+ok 13 - return 200 text
+ok 14 - return 404 text
+ok 15 - error 405 to return 200 text
+ok 16 - return 302 text
+ok 17 - error 302 return 200 text
+ok 18 - error 405 return 302 text
+ok 19 - error 405 rewrite redirect
+not ok 20 - error 405 directory redirect
+ok 21 - escape with added args
+ok 22 - escape with added args
+ok 23 - valid_location reset
+ok 24 - no alerts
+ok 25 - no sanitizer errors
+Dubious, test returned 1 (wstat 256, 0x100)
+Failed 1/25 subtests 
+
+Test Summary Report
+-------------------
+rewrite.t (Wstat: 256 (exited 1) Tests: 25 Failed: 1)
+  Failed test:  20
+  Non-zero exit status: 1
+Files=1, Tests=25,  0 wallclock secs ( 0.01 usr  0.00 sys +  0.05 cusr  0.01 csys =  0.07 CPU)
+Result: FAIL

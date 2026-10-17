@@ -1,0 +1,100 @@
+
+#   Failed test 'proxy_host'
+#   at proxy.t line 119.
+#                   'HTTP/1.1 403 Forbidden
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:57:01 GMT
+# Content-Type: text/html
+# Content-Length: 153
+# Connection: close
+# 
+# <html>
+# <head><title>403 Forbidden</title></head>
+# <body>
+# <center><h1>403 Forbidden</h1></center>
+# <hr><center>nginx/1.25.5</center>
+# </body>
+# </html>
+# '
+#     doesn't match '(?^:X-Proxy-Host:\s127\.0\.0\.1:8080)'
+
+#   Failed test 'proxy_port'
+#   at proxy.t line 120.
+#                   'HTTP/1.1 403 Forbidden
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:57:01 GMT
+# Content-Type: text/html
+# Content-Length: 153
+# Connection: close
+# 
+# <html>
+# <head><title>403 Forbidden</title></head>
+# <body>
+# <center><h1>403 Forbidden</h1></center>
+# <hr><center>nginx/1.25.5</center>
+# </body>
+# </html>
+# '
+#     doesn't match '(?^:X-Proxy-Port:\s8080)'
+
+#   Failed test 'proxy_add_x_forwarded_for'
+#   at proxy.t line 121.
+#                   'HTTP/1.1 403 Forbidden
+# Server: nginx/1.25.5
+# Date: Sat, 17 Oct 2026 12:57:01 GMT
+# Content-Type: text/html
+# Content-Length: 153
+# Connection: close
+# 
+# <html>
+# <head><title>403 Forbidden</title></head>
+# <body>
+# <center><h1>403 Forbidden</h1></center>
+# <hr><center>nginx/1.25.5</center>
+# </body>
+# </html>
+# '
+#     doesn't match '(?^:X-Proxy-Forwarded:.*192\.0\.2\.1)'
+# Looks like you failed 3 tests of 30.
+proxy.t .. 
+1..30
+ok 1 - proxy request
+ok 2 - proxy request with multiple packets
+ok 3 - proxy head request
+ok 4 - proxy with variables
+ok 5 - proxy with variables to upstream
+ok 6 - proxy connect timeout
+not ok 7 - proxy_host
+not ok 8 - proxy_port
+not ok 9 - proxy_add_x_forwarded_for
+ok 10 - connect time - slow response header
+ok 11 - header time - slow response header
+ok 12 - connect time - slow response body
+ok 13 - header time - slow response body
+ok 14 - connect time - next
+ok 15 - connect time - next 2
+ok 16 - header time - next
+ok 17 - header time - next 2
+ok 18 - response time - next
+ok 19 - response time - next 2
+ok 20 - connect time log - slow response header
+ok 21 - connect time log - slow response body
+ok 22 - connect time log - client close
+ok 23 - header time log - slow response header
+ok 24 - header time log - slow response body
+ok 25 - header time log - client close
+ok 26 - response time log - slow response header
+ok 27 - response time log - slow response body
+ok 28 - response time log - client close
+ok 29 - no alerts
+ok 30 - no sanitizer errors
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 3/30 subtests 
+
+Test Summary Report
+-------------------
+proxy.t (Wstat: 768 (exited 3) Tests: 30 Failed: 3)
+  Failed tests:  7-9
+  Non-zero exit status: 3
+Files=1, Tests=30,  8 wallclock secs ( 0.02 usr  0.01 sys +  0.08 cusr  0.02 csys =  0.13 CPU)
+Result: FAIL

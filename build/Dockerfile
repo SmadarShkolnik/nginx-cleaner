@@ -1,6 +1,8 @@
 # Builds the .debs from source on a clean debian:bookworm-slim.
-#   docker build -f build/Dockerfile.build --output type=local,dest=out/debs build/
-FROM debian:bookworm-slim AS builder
+#   docker build -f build/Dockerfile --output type=local,dest=out/debs build/
+# Base pinned by digest (DEBIAN_BASE_DIGEST in versions.env) for reproducibility;
+# keep this digest and the Containerfile's in sync with versions.env.
+FROM debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587 AS builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

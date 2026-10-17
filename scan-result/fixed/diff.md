@@ -26,8 +26,8 @@ _A finding is one package x CVE pair; the same CVE in several packages counts on
 
 | package | findings removed |
 |---|---:|
-| openssl | 42 |
 | libssl3 | 42 |
+| openssl | 42 |
 | libexpat1 | 30 |
 | libgnutls30 | 21 |
 | libxml2 | 20 |

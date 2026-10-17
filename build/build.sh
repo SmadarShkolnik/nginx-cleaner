@@ -6,7 +6,7 @@
 #   2. nginx 1.25.5 + modules via nginx.org's pkg-oss, with patches/nginx/*.patch applied
 #      (backport of upstream ce1da78; fixes CVE-2026-15176)
 #
-# Runs inside debian:bookworm-slim (see Dockerfile.build). Every download is
+# Runs inside debian:bookworm-slim (see build/Dockerfile). Every download is
 # checked against a hash pinned in versions.env. Output: $OUT/*.deb
 set -euxo pipefail
 

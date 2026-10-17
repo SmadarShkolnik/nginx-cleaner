@@ -1,0 +1,41 @@
+name: ci
+
+# Builds the .debs + image from source and runs the full test suite on a NATIVE
+# amd64 runner. The local development machine is arm64; this is how amd64 gets
+# exercised without slow QEMU emulation. Until this has a green run, the README
+# does not claim amd64 support.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04   # amd64
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show platform
+        run: |
+          uname -m
+          docker version
+
+      - name: Build the .debs from source
+        run: make deb
+
+      - name: Build the image
+        run: make image
+
+      - name: Run the test suite
+        run: make test
+
+      - name: Upload built .debs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debs-amd64
+          path: out/debs/*.deb
+          if-no-files-found: ignore

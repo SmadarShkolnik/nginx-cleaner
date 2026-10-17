@@ -4,6 +4,16 @@ Every scenario runs the same requests against both images and asserts that
 status, headers and body match. Volatile headers (Date) are ignored; mtime
 headers (ETag, Last-Modified) are ignored only for files shipped inside the
 images, because the packages were built at different times.
+
+The CVE-2026-15176 backport introduces exactly ONE intended behavioural
+difference from the original: in a location that combines `alias` with a
+`rewrite` that has no `break`/`last` and then evaluates `$request_filename`,
+the patched build refuses the mapping (empty `$request_filename` + an alert)
+instead of leaking heap bytes. That single divergence is asserted in
+test_cve_2026_15176.py. It is NOT a regression, so it is deliberately kept out
+of the configs here; everything in this suite must stay byte-identical. The
+near-miss variants that must NOT change (rewrite WITH `last`, and `alias`
+without any rewrite) are pinned explicitly by test_backport_only_affects_no_break_alias.
 """
 import gzip
 import json
@@ -210,6 +220,23 @@ def test_custom_config(custom_pair, kw):
     same(custom_pair, **kw)
 
 
+def test_backport_only_affects_no_break_alias(custom_pair):
+    """The backport must change ONLY the no-break alias+rewrite path.
+
+    These two near-miss cases exercise the directives involved in CVE-2026-15176
+    but not the exact trigger, so both images must still answer identically:
+      - /rewrite/hello.txt: rewrite WITH `last` (the URI is finalised before the
+        alias location is chosen, so r->uri_changed is irrelevant to the mapping);
+      - /static/hello.txt:  `alias` WITHOUT any rewrite.
+    The actual intended divergence (no-break rewrite + $request_filename) lives in
+    test_cve_2026_15176.py; keeping it out of here is what makes compat exact.
+    """
+    r, _ = same(custom_pair, path="/rewrite/hello.txt")
+    assert r.status == 200
+    r, _ = same(custom_pair, path="/static/hello.txt")
+    assert r.status == 200
+
+
 def test_custom_etag_revalidation(custom_pair):
     etag = request(custom_pair.orig.ports[80], path="/static/hello.txt").header("ETag")
     a, _ = same(custom_pair, path="/static/hello.txt", headers={"If-None-Match": etag})
@@ -272,7 +299,7 @@ def tls_probe(network, host, args):
     """Run openssl s_client / curl from a fixed client image against `host`."""
     script = f"""
 echo | openssl s_client -connect {host}:443 -servername localhost {args} 2>&1 \
-  | grep -E '^(New,|ALPN protocol|No ALPN|Server Temp Key|Peer signature type|Verify return code|Protocol *:|Cipher *:)'
+  | grep -aE '^(New,|ALPN protocol|No ALPN|Server Temp Key|Peer signature type|Verify return code|Protocol *:|Cipher *:)'
 curl -sk --http2 -o - -w ' http=%{{http_version}} code=%{{http_code}}' https://{host}/
 """
     return docker("run", "--rm", "--network", network, "--entrypoint", "sh", ORIG_IMAGE, "-c", script)

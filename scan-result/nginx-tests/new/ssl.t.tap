@@ -1,0 +1,29 @@
+ssl.t .. 
+1..23
+ok 1 - session
+ok 2 - session reused
+ok 3 - CN
+ok 4 - CN inner
+ok 5 - session timeout
+ok 6 - session id
+ok 7 - session id reused
+ok 8 - session id no ssl
+ok 9 - cipher
+ok 10 - ciphers
+ok 11 - client verify
+ok 12 - protocol
+ok 13 - issuer
+ok 14 - subject
+ok 15 - time
+ok 16 - request body chunked
+ok 17 - pipelined requests
+ok 18 - ssl unexpected eof
+ok 19 - ssl shutdown on lingering close
+ok 20 - log ssl variable on lingering close
+ok 21 - no crit
+ok 22 - no alerts
+ok 23 - no sanitizer errors
+ok
+All tests successful.
+Files=1, Tests=23,  5 wallclock secs ( 0.02 usr  0.00 sys +  2.75 cusr  0.09 csys =  2.86 CPU)
+Result: PASS
