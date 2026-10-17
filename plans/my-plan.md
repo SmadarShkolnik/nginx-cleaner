@@ -5,9 +5,9 @@
 - [x] Create artifacts to view the results for my CVE's choices.
 - [x] Choose CVE to fix using the artifact
     * Filtered using the artifact - High severity, type of fix, This is for the Backport:
-        ![Backport CVEs after filtering](../images/backport-cves-after-filtering.png)
+        ![Backport CVEs after filtering](../doc-pictures/backport-cves-after-filtering.png)
     * This is for the Bump (newer Debian source), Critical severity, also using the filter (EPSS ≥ 90th percentile):
-        ![Bump Critical CVEs after filtering](../images/bump-critical-cves-after-filtering.png)
+        ![Bump Critical CVEs after filtering](../doc-pictures/bump-critical-cves-after-filtering.png)
         * Why Runtime Path = "nginx binary": the container only runs `/usr/sbin/nginx`, so only nginx and the libraries it links to (`ldd`: libssl3, libpcre2-8-0, zlib1g, libcrypt1, libc6) can be reached by traffic. The other packages are never loaded.
         * Filter funnel in the artifact: 534 findings → **99** nginx binary →
             * Backport: **38** High → **3** Backport (the first screenshot)

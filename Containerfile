@@ -1,8 +1,10 @@
 # Drop-in replacement for nginx:1.25-bookworm, installed from our own .debs (out/debs, see build/).
 # Mirrors docker-nginx mainline/debian/Dockerfile at commit 9abe4ae (nginx 1.25.5, njs 0.8.4-3):
 # same base, user/group, packages, env, entrypoint scripts, ports, stop signal and command.
-#   docker build -f Containerfile -t echo/nginx:1.25-bookworm .
-FROM debian:bookworm-slim
+#   docker build --build-arg BASE_IMAGE=... -f Containerfile -t echo/nginx:1.25-bookworm .
+# BASE_IMAGE is the digest-pinned debian:bookworm-slim, set in the Makefile (`make image`).
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
@@ -32,7 +34,10 @@ RUN --mount=type=bind,source=out/debs,target=/tmp/debs \
 # Hold our from-source packages. Their +echo1 versions sort BELOW a future Debian
 # 3.0.22-1~deb12u2, so an apt upgrade (here or in a derived image) could replace or
 # reject them. To take a real update, rebuild from source (build/) and bump +echoN.
+# The nginx-module-* packages are held too: they are built from the same pkg-oss
+# source and carry +echo1, so an upgrade could swap them out just like nginx.
     && apt-mark hold nginx libssl3 openssl \
+        nginx-module-xslt nginx-module-geoip nginx-module-image-filter nginx-module-njs \
 # forward request and error logs to docker log collector
     && ln -sf /dev/stdout /var/log/nginx/access.log \
     && ln -sf /dev/stderr /var/log/nginx/error.log \

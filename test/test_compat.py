@@ -272,7 +272,7 @@ def tls_probe(network, host, args):
     """Run openssl s_client / curl from a fixed client image against `host`."""
     script = f"""
 echo | openssl s_client -connect {host}:443 -servername localhost {args} 2>&1 \
-  | grep -E '^(New,|ALPN protocol|No ALPN|Server Temp Key|Peer signature type|Verify return code|Protocol *:|Cipher *:)'
+  | grep -aE '^(New,|ALPN protocol|No ALPN|Server Temp Key|Peer signature type|Verify return code|Protocol *:|Cipher *:)'
 curl -sk --http2 -o - -w ' http=%{{http_version}} code=%{{http_code}}' https://{host}/
 """
     return docker("run", "--rm", "--network", network, "--entrypoint", "sh", ORIG_IMAGE, "-c", script)

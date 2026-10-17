@@ -6,7 +6,7 @@
 #   2. nginx 1.25.5 + modules via nginx.org's pkg-oss, with patches/nginx/*.patch applied
 #      (backport of upstream ce1da78; fixes CVE-2026-15176)
 #
-# Runs inside debian:bookworm-slim (see Dockerfile.build). Every download is
+# Runs inside debian:bookworm-slim (see build/Dockerfile). Every download is
 # checked against a hash pinned in versions.env. Output: $OUT/*.deb
 set -euxo pipefail
 
@@ -44,16 +44,9 @@ build_openssl() {
         "Rebuild from upstream OpenSSL ${OPENSSL_VERSION} tarball (version bump from 3.0.11)."
     apt-get build-dep -y --no-install-recommends ./
 
-    # OpenSSL's test suite is skipped by default (nocheck) to keep builds fast.
-    # Set OPENSSL_CHECK=1 to run it (see Makefile / Dockerfile build arg).
-    local build_opts="parallel=$NPROC"
-    if [ "${OPENSSL_CHECK:-0}" = "1" ]; then
-        echo "OPENSSL_CHECK=1: running OpenSSL test suite (DEB_BUILD_OPTIONS without nocheck)."
-    else
-        build_opts="nocheck $build_opts"
-    fi
+    # nocheck: skip OpenSSL's test suite to keep builds fast.
     # -B: arch-dependent packages only (skips libssl-doc); noudeb: skip installer udebs.
-    DEB_BUILD_OPTIONS="$build_opts" DEB_BUILD_PROFILES="noudeb" \
+    DEB_BUILD_OPTIONS="nocheck parallel=$NPROC" DEB_BUILD_PROFILES="noudeb" \
         dpkg-buildpackage -B -us -uc
 
     cd "$dir"

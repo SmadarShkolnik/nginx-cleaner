@@ -1,14 +1,7 @@
-"""CVE-2026-15176 regression test (behaviour is EXPECTED to differ from the original).
+"""CVE-2026-15176: upstream reproducer (nginx ce1da78), alias + rewrite without break + $request_filename.
 
-Upstream reproducer (nginx commit ce1da78): a location with "alias" + "rewrite"
-(no break/last) + a directive that evaluates $request_filename. Before the fix,
-the URI-to-path mapping runs with the rewritten (shorter) URI: the buffer is
-sized for the wrong length and the copy runs past it. On the original image the
-response body therefore contains heap bytes in front of "/x".
-
-With the backport, ngx_http_map_uri_to_path() refuses the mapping and logs an
-alert; $request_filename evaluates to nothing, so the body is empty. Workers
-keep running.
+Original image: GET /foo/1 returns non-printable bytes followed by "/x".
+Patched image: empty body and an "alias cannot be used" alert; workers keep running.
 """
 import os
 import time
@@ -19,6 +12,11 @@ from harness import CONFIGS, Pair, request
 
 ALERT = '"alias" cannot be used in location "/foo/" where URI was rewritten'
 PATHS = ["/foo/1", "/foo/" + "A" * 64]
+LEAK_TAIL = b"/x"  # the rewrite target; ends every /foo/1 body on the original image
+
+
+def printable(b):
+    return all(0x20 <= c <= 0x7e for c in b)
 
 
 @pytest.fixture(scope="module")
@@ -45,16 +43,15 @@ def test_patched_image_rejects_mapping(cve_pair):
 
 
 def test_original_image_detects_vulnerability(cve_pair):
-    """Proves the test can SEE the bug: the unpatched build leaks a body for /foo/1."""
+    """The test can see the bug: every /foo/1 body is non-printable bytes + "/x"."""
     results, logs = probe(cve_pair.orig)
     print(f"\noriginal image /foo/1 -> {results[0].status} body={results[0].body!r} "
           f"(len {len(results[0].body)}); alert_logged={ALERT in logs} "
           f"worker_crash={'exited on signal' in logs}")
-    # /foo/1 is PATHS[0], repeated 10 times -> results[0:10].
-    foo1 = results[: 10]
-    # Every /foo/1 answers 200 with a NON-EMPTY body: the broken alias mapping
-    # ran and $request_filename returned leaked heap bytes. The patched image
-    # returns b"" for the same request (see test above), so empty vs non-empty
-    # is exactly what separates vulnerable from fixed.
+    foo1 = results[:10]  # PATHS[0] x 10
     assert all(r.status == 200 for r in foo1)
-    assert all(len(r.body) > 0 for r in foo1), [r.body for r in foo1]
+    for r in foo1:
+        assert r.body.endswith(LEAK_TAIL), r.body
+        leaked = r.body[: -len(LEAK_TAIL)]
+        assert leaked, r.body
+        assert not printable(leaked), r.body

@@ -89,7 +89,10 @@ def top_removed_packages(before, after, limit=8):
         return []
     out = ["**What drove the removals (top packages, Grype):**", "",
            "| package | findings removed |", "|---|---:|"]
-    out += [f"| {p} | {n} |" for p, n in c.most_common(limit)]
+    # Deterministic order: most removed first, ties broken by package name, so the
+    # generated diff.md is stable across runs (set iteration order is not).
+    ranked = sorted(c.items(), key=lambda kv: (-kv[1], kv[0]))[:limit]
+    out += [f"| {p} | {n} |" for p, n in ranked]
     out.append("")
     return out
 

@@ -47,10 +47,33 @@ class Container:
             args += ["-e", f"{k}={v}"]
         docker(*args, self.image)
         for cport in (80, 443):
-            out = docker("port", self.name, f"{cport}/tcp").strip().splitlines()[0]
-            self.ports[cport] = int(out.rsplit(":", 1)[1])
+            self.ports[cport] = self._published_port(cport)
         self._wait_ready()
         return self
+
+    def _published_port(self, cport: int, timeout: float = 10) -> int:
+        """Look up the host port for `cport`, tolerating the create->publish race.
+
+        Right after `docker run -d`, the port mapping can briefly be
+        unqueryable (Docker Desktop under load), or the container may have
+        exited on startup. Retry for a short window; if the container is no
+        longer running, surface its logs rather than the cryptic
+        "No public port" error from `docker port`.
+        """
+        deadline = time.time() + timeout
+        while True:
+            res = subprocess.run(["docker", "port", self.name, f"{cport}/tcp"],
+                                 capture_output=True, text=True)
+            lines = res.stdout.strip().splitlines()
+            if res.returncode == 0 and lines:
+                return int(lines[0].rsplit(":", 1)[1])
+            if not self.running():
+                raise RuntimeError(f"{self.name} exited before publishing "
+                                   f"{cport}/tcp:\n{self.logs()}")
+            if time.time() >= deadline:
+                raise RuntimeError(f"docker port {self.name} {cport}/tcp failed:\n"
+                                   f"{res.stderr}")
+            time.sleep(0.3)
 
     def _wait_ready(self, timeout: float = 30) -> None:
         deadline = time.time() + timeout

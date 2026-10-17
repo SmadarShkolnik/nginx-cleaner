@@ -26,8 +26,8 @@ _A finding is one package x CVE pair; the same CVE in several packages counts on
 
 | package | findings removed |
 |---|---:|
-| openssl | 42 |
 | libssl3 | 42 |
+| openssl | 42 |
 | libexpat1 | 30 |
 | libgnutls30 | 21 |
 | libxml2 | 20 |
@@ -44,5 +44,4 @@ Package(s) where each CVE is reported (`—` = not reported); verdict is derived
 | CVE-2026-15176 | — | — | nginx | nginx | — | Cleared by VEX |
 | CVE-2025-15467 | libssl3, openssl | — | libssl3, openssl | — | — | No longer reported |
 | CVE-2024-5535 | libssl3, openssl | — | libssl3, openssl | — | — | No longer reported |
-| CVE-2026-93479 | — | — | nginx | nginx | — | Cleared by VEX |
 

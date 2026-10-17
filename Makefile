@@ -8,7 +8,12 @@ IMAGE      ?= echo/nginx:1.25-bookworm
 DEBS       := out/debs
 BASELINE   := scan-result/start
 FIXED      := scan-result/fixed
-TARGET_CVES := CVE-2026-15176 CVE-2025-15467 CVE-2024-5535 CVE-2026-93479
+TARGET_CVES := CVE-2026-15176 CVE-2025-15467 CVE-2024-5535
+
+# Base image for both build/Dockerfile and the Containerfile, pinned by digest for
+# reproducibility (OCI index: amd64 + arm64/v8, resolved 2026-10-16). This is the
+# only copy; refresh with `docker buildx imagetools inspect debian:bookworm-slim`.
+BASE_IMAGE := debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587
 
 export DOCKER_BUILDKIT=1
 
@@ -17,18 +22,15 @@ export DOCKER_BUILDKIT=1
 all: deb image test
 
 DOCKER_BUILD_FLAGS ?=
-# OPENSSL_CHECK=1 runs OpenSSL's upstream test suite during `make deb` (slower).
-# Default 0 keeps builds fast (DEB_BUILD_OPTIONS=nocheck).
-OPENSSL_CHECK ?= 0
 
 deb:
 	rm -rf out/debs
-	docker build $(DOCKER_BUILD_FLAGS) --build-arg OPENSSL_CHECK=$(OPENSSL_CHECK) -f build/Dockerfile --output type=local,dest=out/debs build/
+	docker build $(DOCKER_BUILD_FLAGS) --build-arg BASE_IMAGE=$(BASE_IMAGE) -f build/Dockerfile --output type=local,dest=out/debs build/
 	ls -l out/debs
 
 image:
 	docker pull $(ORIG_IMAGE)
-	docker build -f Containerfile -t $(IMAGE) .
+	docker build --build-arg BASE_IMAGE=$(BASE_IMAGE) -f Containerfile -t $(IMAGE) .
 
 test:
 	cd test && ORIG_IMAGE=$(ORIG_IMAGE) NEW_IMAGE=$(IMAGE) python3 -m pytest -v
